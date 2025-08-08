@@ -1,5 +1,10 @@
+import os
+import dotenv
+
 from tortoise import fields, Tortoise
 from tortoise.models import Model
+
+dotenv.load_dotenv()
 
 class User(Model):
     user_id = fields.IntField(primary_key=True, auto_increment=True)
@@ -9,9 +14,12 @@ class User(Model):
     requests = fields.IntField(default=0) # Вместо 0 будет значение в/из конфиге
     current_model = fields.TextField(default="gpt-xdVERSION") # Значение-заглушка
 
+    class Meta:
+        table = "users"
+
 async def init_db():
     await Tortoise.init(
-        db_url='sqlite://db.sqlite3', # TODO: Добавить миграции на aerich, в будущем переделать в postgresql заместо sqlite
+        db_url=os.getenv("DB_URL", "sqlite://db.sqlite3"),
         modules={'models': ['bot.database.structure']}
     )
     await Tortoise.generate_schemas()
@@ -20,4 +28,3 @@ async def close_db():
     await Tortoise.close_connections()
 
 
-    
